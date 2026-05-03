@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - CertOS</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <i data-lucide="cpu"></i>
+                <span>CertOS User</span>
+            </div>
+            
+            <ul class="nav-links">
+                <li><a href="#" class="active" data-page="jobs"><i data-lucide="list"></i> My Jobs</a></li>
+                <li><a href="#" data-page="submit"><i data-lucide="play-circle"></i> Submit Job</a></li>
+            </ul>
+
+            <div class="user-profile">
+                <div class="avatar"><i data-lucide="user"></i></div>
+                <div class="user-info">
+                    <span class="name" id="username-display">User</span>
+                    <span class="role">User Portal</span>
+                </div>
+                <button id="btn-logout" class="btn btn-secondary" style="margin-left:auto; padding: 4px"><i data-lucide="log-out"></i></button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="topbar glass">
+                <h1 id="page-title">My Jobs</h1>
+            </header>
+
+            <!-- Page: My Jobs -->
+            <div id="page-jobs" class="page active">
+                <div class="panel glass full-height">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <h2>Recent Jobs</h2>
+                        <button class="btn btn-primary" onclick="document.querySelector('[data-page=submit]').click()">New Job</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="user-jobs-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Node</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Submit Job -->
+            <div id="page-submit" class="page">
+                <div class="panel glass">
+                    <h2>Submit New Workload</h2>
+                    <div style="margin-top: 20px; max-width: 600px;">
+                        <div class="form-group">
+                            <label>Job Name</label>
+                            <input type="text" id="job-name" placeholder="e.g. data-processing-01">
+                        </div>
+                        <div class="form-group">
+                            <label>Command</label>
+                            <input type="text" id="job-cmd" placeholder="e.g. sleep 60">
+                        </div>
+                        <div class="form-group">
+                            <label>CPU Cores: <span id="val-cpu">1</span></label>
+                            <input type="range" id="job-cpu" min="1" max="64" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>RAM (MB): <span id="val-ram">1024</span></label>
+                            <input type="range" id="job-ram" min="256" max="65536" step="256" value="1024">
+                        </div>
+                        <button id="btn-submit-job" class="btn btn-primary">Submit to Cluster</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/user.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package certosc;
+
+import "certosc/common.proto";
+
+option cc_enable_arenas = true;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AGENT SERVICE — Agent-to-Master RPCs
+// ═══════════════════════════════════════════════════════════════════════════
+
+service AgentService {
+    // ─── Registration ──────────────────────────────────────────────────────
+    rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse);
+    rpc UnregisterNode(UnregisterNodeRequest) returns (StatusResponse);
+
+    // ─── Heartbeat & Metrics ───────────────────────────────────────────────
+    rpc SendHeartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+    rpc ReportMetrics(MetricsSnapshot) returns (StatusResponse);
+
+    // ─── Job Execution ─────────────────────────────────────────────────────
+    rpc FetchJob(FetchJobRequest) returns (FetchJobResponse);
+    rpc ReportJobStarted(JobStartedReport) returns (StatusResponse);
+    rpc ReportJobCompleted(JobCompletedReport) returns (StatusResponse);
+    rpc ReportJobFailed(JobFailedReport) returns (StatusResponse);
+
+    // ─── Log Streaming ─────────────────────────────────────────────────────
+    rpc StreamJobLogs(stream LogEntry) returns (StatusResponse);
+}
+
+// ─── Registration Messages ─────────────────────────────────────────────────
+
+message RegisterNodeRequest {
+    string hostname = 1;
+    string ip_address = 2;
+    uint32 port = 3;
+    ResourceSpec total_resources = 4;
+    string os_info = 5;
+    string agent_version = 6;
+    string auth_key = 7;                   // Pre-shared authentication key
+}
+
+message RegisterNodeResponse {
+    bool success = 1;
+    string node_id = 2;                    // Assigned node ID
+    string message = 3;
+    uint32 heartbeat_interval_seconds = 4; // How often to send heartbeats
+    uint32 metrics_interval_seconds = 5;   // How often to send metrics
+}
+
+message UnregisterNodeRequest {
+    string node_id = 1;
+    string reason = 2;
+}
+
+// ─── Heartbeat Messages ────────────────────────────────────────────────────
+
+message HeartbeatRequest {
+    string node_id = 1;
+    ResourceSpec available_resources = 2;
+    uint32 running_jobs = 3;
+    repeated string running_job_ids = 4;
+    int64 timestamp = 5;
+    double cpu_usage_percent = 6;
+    double ram_usage_percent = 7;
+}
+
+message HeartbeatResponse {
+    bool acknowledged = 1;
+    repeated string jobs_to_cancel = 2;    // Master can request job cancellation
+    bool should_drain = 3;                 // Master requests node to drain
+    string message = 4;
+}
+
+// ─── Job Messages ──────────────────────────────────────────────────────────
+
+message FetchJobRequest {
+    string node_id = 1;
+    ResourceSpec available_resources = 2;  // Current available resources
+}
+
+message FetchJobResponse {
+    bool has_job = 1;
+    string job_id = 2;
+    JobSpec spec = 3;
+    ResourceSpec allocated_resources = 4;
+}
+
+message JobStartedReport {
+    string node_id = 1;
+    string job_id = 2;
+    uint32 pid = 3;                        // OS process ID
+    int64 started_at = 4;
+}
+
+message JobCompletedReport {
+    string node_id = 1;
+    string job_id = 2;
+    int32 exit_code = 3;
+    int64 completed_at = 4;
+    bytes stdout_data = 5;                 // Final stdout output
+    bytes stderr_data = 6;                 // Final stderr output
+    uint64 cpu_time_ms = 7;               // Total CPU time used
+    uint64 peak_ram_mb = 8;               // Peak RAM usage
+}
+
+message JobFailedReport {
+    string node_id = 1;
+    string job_id = 2;
+    string error_message = 3;
+    int32 exit_code = 4;
+    int64 failed_at = 5;
+    bytes stdout_data = 6;
+    bytes stderr_data = 7;
+}

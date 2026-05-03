@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package certosc;
+
+import "certosc/common.proto";
+
+option cc_enable_arenas = true;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// METRICS SERVICE — Monitoring & Observability
+// ═══════════════════════════════════════════════════════════════════════════
+
+service MetricsService {
+    // Get historical metrics for a specific node
+    rpc GetNodeMetricsHistory(NodeMetricsHistoryRequest) returns (NodeMetricsHistoryResponse);
+
+    // Get cluster-wide aggregated metrics
+    rpc GetClusterMetrics(ClusterMetricsRequest) returns (ClusterMetricsResponse);
+
+    // Get scheduler statistics
+    rpc GetSchedulerStats(Empty) returns (SchedulerStats);
+
+    // Get job execution timeline (for Gantt chart)
+    rpc GetJobTimeline(JobTimelineRequest) returns (JobTimelineResponse);
+}
+
+// ─── Node Metrics History ──────────────────────────────────────────────────
+
+message NodeMetricsHistoryRequest {
+    string node_id = 1;
+    int64 from_timestamp = 2;              // Unix timestamp
+    int64 to_timestamp = 3;
+    uint32 resolution_seconds = 4;         // Data point interval
+}
+
+message NodeMetricsHistoryResponse {
+    string node_id = 1;
+    repeated MetricsSnapshot snapshots = 2;
+}
+
+// ─── Cluster Metrics ───────────────────────────────────────────────────────
+
+message ClusterMetricsRequest {
+    int64 from_timestamp = 1;
+    int64 to_timestamp = 2;
+    uint32 resolution_seconds = 3;
+}
+
+message ClusterMetricsResponse {
+    repeated ClusterMetricsPoint points = 1;
+}
+
+message ClusterMetricsPoint {
+    int64 timestamp = 1;
+    double avg_cpu_usage = 2;
+    double avg_ram_usage = 3;
+    double avg_gpu_usage = 4;
+    uint32 active_nodes = 5;
+    uint32 running_jobs = 6;
+    uint32 queued_jobs = 7;
+    ResourceSpec total_available = 8;
+}
+
+// ─── Scheduler Stats ──────────────────────────────────────────────────────
+
+message SchedulerStats {
+    uint32 scheduling_cycles = 1;
+    double avg_cycle_time_ms = 2;
+    uint32 jobs_scheduled = 3;
+    uint32 jobs_backfilled = 4;
+    uint32 jobs_preempted = 5;
+    double cluster_utilization = 6;        // 0.0 - 1.0
+    uint32 pending_reservations = 7;
+    repeated FairShareEntry fair_share_table = 8;
+}
+
+message FairShareEntry {
+    string user_id = 1;
+    string username = 2;
+    double target_share = 3;               // What they should get
+    double actual_share = 4;               // What they're getting
+    double fair_share_factor = 5;          // Computed factor
+    uint64 cpu_hours_used = 6;
+    uint64 ram_gb_hours_used = 7;
+}
+
+// ─── Job Timeline (Gantt Chart) ────────────────────────────────────────────
+
+message JobTimelineRequest {
+    int64 from_timestamp = 1;
+    int64 to_timestamp = 2;
+    string node_id_filter = 3;            // empty = all nodes
+    uint32 limit = 4;                      // max jobs to return
+}
+
+message JobTimelineResponse {
+    repeated JobTimelineEntry entries = 1;
+    repeated string node_ids = 2;          // Ordered node IDs for Y-axis
+}
+
+message JobTimelineEntry {
+    string job_id = 1;
+    string job_name = 2;
+    string user = 3;
+    string node_id = 4;
+    JobStatus status = 5;
+    int64 started_at = 6;
+    int64 completed_at = 7;               // 0 if still running
+    int64 estimated_end = 8;              // For running jobs
+    ResourceSpec resources = 9;
+    int32 priority = 10;
+}

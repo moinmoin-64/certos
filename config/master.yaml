@@ -1,0 +1,15 @@
+master:
+  bind_address: "0.0.0.0"
+  grpc_port: 50051
+  db_path: "certosc.db"
+  log_dir: "logs"
+  log_level: "debug"
+  jwt_secret: "certosc-dev-secret-change-in-production"
+  jwt_expiry_sec: 3600
+  heartbeat_timeout_sec: 15
+  scheduler_interval_ms: 1000
+  backfill_window_sec: 3600
+  max_backfill_jobs: 50
+  fair_share_decay_hours: 24.0
+  enable_tls: false
+  node_auth_key: "certosc-node-key"

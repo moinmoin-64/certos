@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - CertOS</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <i data-lucide="cpu"></i>
+                <span>CertOS Admin</span>
+            </div>
+            
+            <ul class="nav-links">
+                <li><a href="#" class="active" data-page="overview"><i data-lucide="layout-dashboard"></i> Overview</a></li>
+                <li><a href="#" data-page="nodes"><i data-lucide="server"></i> Nodes Heatmap</a></li>
+                <li><a href="#" data-page="requests"><i data-lucide="mail"></i> Pending Requests</a></li>
+                <li><a href="#" data-page="jobs"><i data-lucide="list"></i> All Jobs</a></li>
+                <li><a href="#" data-page="settings"><i data-lucide="settings"></i> Settings</a></li>
+            </ul>
+
+            <div class="user-profile">
+                <div class="avatar"><i data-lucide="shield"></i></div>
+                <div class="user-info">
+                    <span class="name" id="username-display">Admin</span>
+                    <span class="role">Administrator</span>
+                </div>
+                <button id="btn-logout" class="btn btn-secondary" style="margin-left:auto; padding: 4px"><i data-lucide="log-out"></i></button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="topbar glass">
+                <h1 id="page-title">Overview</h1>
+                <div class="cluster-status online">
+                    <span class="pulse"></span>
+                    <span id="cluster-status-text">Cluster Online</span>
+                </div>
+            </header>
+
+            <!-- Page: Overview -->
+            <div id="page-overview" class="page active">
+                <div class="stats-grid">
+                    <div class="stat-card glass">
+                        <div class="stat-icon"><i data-lucide="server"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Nodes</span>
+                            <span class="stat-value" id="stat-nodes">0 / 0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon"><i data-lucide="play-circle"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Running Jobs</span>
+                            <span class="stat-value" id="stat-running">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon"><i data-lucide="list-todo"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Queued Jobs</span>
+                            <span class="stat-value" id="stat-queued">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Nodes -->
+            <div id="page-nodes" class="page">
+                <div class="panel glass full-height">
+                    <h2>Nodes Heatmap</h2>
+                    <div id="node-heatmap" class="heatmap-grid" style="margin-top: 20px;"></div>
+                    
+                    <h3 style="margin-top: 40px;">Detailed View</h3>
+                    <div id="nodes-detailed-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Requests -->
+            <div id="page-requests" class="page">
+                <div class="panel glass full-height">
+                    <h2>Pending Job Requests</h2>
+                    <div class="table-container" style="margin-top: 20px;">
+                        <table id="requests-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Applicant</th>
+                                    <th>Goal</th>
+                                    <th>Resources</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Jobs -->
+            <div id="page-jobs" class="page">
+                <div class="panel glass full-height">
+                    <h2>All Jobs</h2>
+                    <div class="table-container" style="margin-top: 20px;">
+                        <table id="all-jobs-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>User</th>
+                                    <th>Status</th>
+                                    <th>Node</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Settings -->
+            <div id="page-settings" class="page">
+                <div class="panel glass full-height">
+                    <h2>Administration & Settings</h2>
+                    <div class="admin-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+                        
+                        <div class="admin-card">
+                            <h3>Cluster Configuration</h3>
+                            <form id="admin-config-form">
+                                <div class="form-group">
+                                    <label>Scheduler Interval (ms)</label>
+                                    <input type="number" id="cfg-scheduler-interval" value="2000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Fair-Share Half-Life (Hours)</label>
+                                    <input type="number" id="cfg-fairshare-halflife" value="24">
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="alert('Configuration saved')">Save Config</button>
+                            </form>
+                        </div>
+                        
+                        <div class="admin-card">
+                            <h3>User Management</h3>
+                            <div class="table-container">
+                                <table id="users-table">
+                                    <thead><tr><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
+                                    <tbody>
+                                        <!-- Users will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="btn-open-add-user" style="margin-top: 15px;">
+                                <i data-lucide="user-plus"></i> Add User
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-add-user" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="glass" style="padding: 30px; border-radius: 16px; width: 400px; border: 1px solid rgba(255,255,255,0.1);">
+            <h2>Add New User</h2>
+            <form id="add-user-form" style="margin-top: 20px;">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="new-username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="new-password" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="new-role" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 8px; border-radius: 4px;">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Create User</button>
+                    <button type="button" class="btn btn-secondary" id="btn-close-add-user">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="js/admin.js"></script>
+</body>
+</html>

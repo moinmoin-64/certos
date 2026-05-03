@@ -1,0 +1,21 @@
+{
+  "name": "certosc",
+  "version": "1.0.0",
+  "description": "HPC Cloud Operating System - Distributed Cluster Management",
+  "dependencies": [
+    "grpc",
+    "protobuf",
+    "abseil",
+    "boost-beast",
+    "boost-asio",
+    "boost-json",
+    "spdlog",
+    "yaml-cpp",
+    "nlohmann-json",
+    "sqlite3",
+    "jwt-cpp",
+    "picojson",
+    "openssl",
+    "gtest"
+  ]
+}

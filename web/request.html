@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Project - CertOS HPC</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .request-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header i { font-size: 48px; color: #3b82f6; margin-bottom: 10px; }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .full-width { grid-column: span 2; }
+        .resource-group {
+            display: flex;
+            gap: 15px;
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+        .file-upload {
+            border: 2px dashed rgba(255,255,255,0.2);
+            padding: 40px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-upload:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+        .success-step { display: none; text-align: center; padding: 40px; }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="request-container">
+        <div id="request-form-container">
+            <div class="header">
+                <i data-lucide="send"></i>
+                <h1>CertOS Project Request</h1>
+                <p>Submit your computational job for review and approval.</p>
+            </div>
+
+            <form id="request-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Your Name</label>
+                        <input type="text" id="name" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="email" placeholder="john@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="req-container">Container Environment</label>
+                        <select id="req-container" required>
+                            <option value="/opt/certos/images/base.sif">CertOS Base (Ubuntu 22.04)</option>
+                            <option value="/opt/certos/images/ml.sif">CertOS ML (Python + CUDA)</option>
+                            <option value="/opt/certos/images/mpi.sif">CertOS HPC (OpenMPI + GCC)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="req-goal">Project Goal & Description</label>
+                        <textarea id="goal" rows="3" placeholder="Describe what you want to calculate..." required></textarea>
+                    </div>
+                    
+                    <div class="full-width">
+                        <label>Resource Requirements</label>
+                        <div class="resource-group">
+                            <div class="form-group">
+                                <label>CPU Cores</label>
+                                <input type="number" id="cpu" value="2" min="1" max="64">
+                            </div>
+                            <div class="form-group">
+                                <label>RAM (GB)</label>
+                                <input type="number" id="ram" value="4" min="1" max="256">
+                            </div>
+                            <div class="form-group">
+                                <label>Runtime (Hours)</label>
+                                <input type="number" id="time" value="24" min="1" max="720">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Code Archive (.zip, .tar.gz)</label>
+                        <div class="file-upload" onclick="document.getElementById('file-input').click()">
+                            <i data-lucide="upload-cloud"></i>
+                            <p>Click to select or drag and drop</p>
+                            <span id="file-name" style="color: #3b82f6;">No file selected</span>
+                            <input type="file" id="file-input" style="display: none" accept=".zip,.gz,.tar" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="error-msg" class="error-msg" style="margin-top: 20px;"></div>
+                
+                <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%; margin-top: 30px; height: 50px;">
+                    Submit Request
+                </button>
+            </form>
+        </div>
+
+        <div id="success-container" class="success-step">
+            <i data-lucide="check-circle" style="font-size: 64px; color: #10b981;"></i>
+            <h2>Request Received!</h2>
+            <p>Your project has been submitted for review. You will receive an email once the admin approves your request.</p>
+            <div style="margin-top: 20px; font-family: monospace; background: #000; padding: 15px; border-radius: 8px;">
+                Request ID: <span id="res-id">---</span>
+            </div>
+            <button onclick="location.reload()" class="btn" style="margin-top: 30px;">Submit Another</button>
+        </div>
+    </div>
+
+    <script src="js/request.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

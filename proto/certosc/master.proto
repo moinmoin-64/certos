@@ -1,0 +1,162 @@
+syntax = "proto3";
+
+package certosc;
+
+import "certosc/common.proto";
+
+option cc_enable_arenas = true;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MASTER SERVICE — Client-facing RPCs
+// ═══════════════════════════════════════════════════════════════════════════
+
+service MasterService {
+    // ─── Authentication ────────────────────────────────────────────────────
+    rpc Login(Credentials) returns (AuthToken);
+    rpc CreateUser(CreateUserRequest) returns (UserInfo);
+
+    // ─── Job Management ────────────────────────────────────────────────────
+    rpc SubmitJob(SubmitJobRequest) returns (JobInfo);
+    rpc GetJobStatus(GetJobRequest) returns (JobInfo);
+    rpc CancelJob(CancelJobRequest) returns (StatusResponse);
+    rpc ListJobs(ListJobsRequest) returns (ListJobsResponse);
+    rpc GetJobLogs(GetJobLogsRequest) returns (stream LogEntry);
+    rpc GetJobOutput(GetJobRequest) returns (JobOutputResponse);
+
+    // ─── Node Queries ──────────────────────────────────────────────────────
+    rpc ListNodes(Empty) returns (ListNodesResponse);
+    rpc GetNodeDetail(GetNodeRequest) returns (NodeInfo);
+    rpc GetClusterStatus(Empty) returns (ClusterInfo);
+
+    // ─── Admin Operations ──────────────────────────────────────────────────
+    rpc AdminSetPriority(SetPriorityRequest) returns (StatusResponse);
+    rpc AdminDrainNode(DrainNodeRequest) returns (StatusResponse);
+    rpc AdminUnddrainNode(DrainNodeRequest) returns (StatusResponse);
+    rpc AdminListUsers(Empty) returns (ListUsersResponse);
+    rpc AdminDeleteUser(DeleteUserRequest) returns (StatusResponse);
+    rpc AdminListRequests(Empty) returns (ListJobRequestsResponse);
+    rpc AdminReviewRequest(ReviewRequest) returns (StatusResponse);
+
+    // ─── Public Operations ──────────────────────────────────────────────────
+    rpc SubmitPublicRequest(JobRequest) returns (StatusResponse);
+    rpc UpdateJobRequest(JobRequest) returns (StatusResponse);
+
+    // ─── Live Streaming ────────────────────────────────────────────────────
+    rpc SubscribeClusterEvents(Empty) returns (stream ClusterEvent);
+    rpc SubscribeNodeMetrics(SubscribeMetricsRequest) returns (stream MetricsSnapshot);
+}
+
+// ─── Request/Response Messages ─────────────────────────────────────────────
+
+message SubmitJobRequest {
+    JobSpec spec = 1;
+}
+
+message GetJobRequest {
+    string job_id = 1;
+}
+
+message CancelJobRequest {
+    string job_id = 1;
+}
+
+message ListJobsRequest {
+    JobStatus status_filter = 1;           // 0 = all statuses
+    string user_filter = 2;                // empty = all users
+    uint32 limit = 3;                      // 0 = default (100)
+    uint32 offset = 4;
+    string sort_by = 5;                    // "submitted_at", "priority", "status"
+    bool sort_desc = 6;
+}
+
+message ListJobsResponse {
+    repeated JobInfo jobs = 1;
+    uint32 total_count = 2;
+}
+
+message GetJobLogsRequest {
+    string job_id = 1;
+    bool follow = 2;                       // If true, stream new logs as they arrive
+    uint64 from_sequence = 3;              // Start from this sequence number
+}
+
+message JobOutputResponse {
+    string job_id = 1;
+    bytes stdout_data = 2;
+    bytes stderr_data = 3;
+    int32 exit_code = 4;
+}
+
+message GetNodeRequest {
+    string node_id = 1;
+}
+
+message SetPriorityRequest {
+    string job_id = 1;
+    int32 new_priority = 2;
+}
+
+message DrainNodeRequest {
+    string node_id = 1;
+    string reason = 2;
+}
+
+message CreateUserRequest {
+    string username = 1;
+    string password = 2;
+    UserRole role = 3;
+    ResourceSpec quota = 4;
+}
+
+message DeleteUserRequest {
+    string user_id = 1;
+}
+
+message ListUsersResponse {
+    repeated UserInfo users = 1;
+}
+
+message ListJobRequestsResponse {
+    repeated JobRequest requests = 1;
+}
+
+message ReviewRequest {
+    string request_id = 1;
+    bool approve = 2;
+    string comment = 3;
+}
+
+message ListNodesResponse {
+    repeated NodeInfo nodes = 1;
+}
+
+// ─── Event Streaming ───────────────────────────────────────────────────────
+
+enum EventType {
+    EVENT_TYPE_UNSPECIFIED    = 0;
+    EVENT_TYPE_JOB_SUBMITTED = 1;
+    EVENT_TYPE_JOB_STARTED   = 2;
+    EVENT_TYPE_JOB_COMPLETED = 3;
+    EVENT_TYPE_JOB_FAILED    = 4;
+    EVENT_TYPE_JOB_CANCELLED = 5;
+    EVENT_TYPE_NODE_ONLINE   = 6;
+    EVENT_TYPE_NODE_OFFLINE  = 7;
+    EVENT_TYPE_NODE_DRAINING = 8;
+    EVENT_TYPE_SCHEDULER_DECISION = 9;
+}
+
+message ClusterEvent {
+    EventType type = 1;
+    int64 timestamp = 2;
+    string message = 3;
+    string job_id = 4;
+    string node_id = 5;
+    JobInfo job_info = 6;
+    NodeInfo node_info = 7;
+    string container_image = 8;
+}
+
+message SubscribeMetricsRequest {
+    string node_id = 1;                    // empty = all nodes
+    uint32 interval_seconds = 2;           // 0 = default (5s)
+}

@@ -1,0 +1,28 @@
+# Build and Binaries
+build/
+bin/
+out/
+vcpkg_installed/
+
+# OS / ISO Build artifacts
+certos_rootfs.img
+certos-v1.0-amd64.iso
+certos_rootfs/
+certos_build/
+mnt_rootfs/
+
+# Singularity / Apptainer
+*.sif
+/opt/certos/images/*.sif
+
+# IDEs
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln
+*.swp
+
+# Logs and Temp
+*.log
+tmp/

@@ -1,0 +1,207 @@
+syntax = "proto3";
+
+package certosc;
+
+option cc_enable_arenas = true;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RESOURCE DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+message ResourceSpec {
+    uint32 cpu_cores = 1;       // Number of CPU cores requested
+    uint64 ram_mb = 2;          // RAM in megabytes
+    uint32 gpu_count = 3;       // Number of GPUs requested
+    uint64 disk_mb = 4;         // Disk space in megabytes
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JOB DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum JobStatus {
+    JOB_STATUS_UNSPECIFIED = 0;
+    JOB_STATUS_SUBMITTED   = 1;
+    JOB_STATUS_QUEUED      = 2;
+    JOB_STATUS_ASSIGNED    = 3;
+    JOB_STATUS_RUNNING     = 4;
+    JOB_STATUS_COMPLETED   = 5;
+    JOB_STATUS_FAILED      = 6;
+    JOB_STATUS_CANCELLED   = 7;
+    JOB_STATUS_PREEMPTED   = 8;
+}
+
+message JobSpec {
+    string name = 1;                         // Human-readable job name
+    string command = 2;                      // Executable path or script
+    repeated string args = 3;               // Command arguments
+    map<string, string> env_vars = 4;       // Environment variables
+    string working_dir = 5;                 // Working directory on compute node
+    ResourceSpec resources = 6;             // Resource requirements
+    uint32 time_limit_seconds = 7;          // Maximum execution time (0 = unlimited)
+    int32 priority = 8;                      // User-set priority (higher = more important)
+    bool preemptable = 9;                   // Can this job be preempted?
+    string stdin_data = 10;                 // Optional stdin input
+    string archive_path = 11;               // Path to uploaded .zip/.tar.gz
+    bool is_interactive = 12;               // Whether to enable Web Terminal
+    string container_image = 13;            // Singularity/Apptainer SIF image path
+}
+
+enum JobRequestStatus {
+    JOB_REQUEST_PENDING = 0;
+    JOB_REQUEST_APPROVED = 1;
+    JOB_REQUEST_REJECTED = 2;
+}
+
+message JobRequest {
+    string request_id = 1;
+    string applicant_name = 2;
+    string applicant_email = 3;
+    string project_goal = 4;
+    JobSpec requested_spec = 5;
+    JobRequestStatus status = 6;
+    string reviewer_id = 7;
+    string review_comment = 8;
+    int64 submitted_at = 9;
+    int64 reviewed_at = 10;
+}
+
+message JobInfo {
+    string job_id = 1;
+    string user_id = 2;
+    string username = 3;
+    JobSpec spec = 4;
+    JobStatus status = 5;
+    string assigned_node_id = 6;
+    string assigned_node_hostname = 7;
+    int32 exit_code = 8;
+    string error_message = 9;
+    int64 submitted_at = 10;               // Unix timestamp
+    int64 started_at = 11;
+    int64 completed_at = 12;
+    int32 effective_priority = 13;          // Computed priority (after fair-share etc.)
+    ResourceSpec allocated_resources = 14;
+}
+
+message LogEntry {
+    string job_id = 1;
+    string stream = 2;                     // "stdout" or "stderr"
+    string content = 3;
+    int64 timestamp = 4;
+    uint64 sequence = 5;                   // Ordering sequence number
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NODE DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum NodeStatus {
+    NODE_STATUS_UNSPECIFIED  = 0;
+    NODE_STATUS_ONLINE       = 1;
+    NODE_STATUS_OFFLINE      = 2;
+    NODE_STATUS_DRAINING     = 3;
+    NODE_STATUS_MAINTENANCE  = 4;
+}
+
+message NodeInfo {
+    string node_id = 1;
+    string hostname = 2;
+    string ip_address = 3;
+    uint32 port = 4;
+    NodeStatus status = 5;
+    ResourceSpec total_resources = 6;
+    ResourceSpec available_resources = 7;
+    ResourceSpec used_resources = 8;
+    int64 registered_at = 9;
+    int64 last_heartbeat = 10;
+    string os_info = 11;                   // e.g., "Linux 6.1.0-x86_64"
+    uint32 running_jobs = 12;
+    repeated string running_job_ids = 13;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// USER / AUTH DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum UserRole {
+    USER_ROLE_UNSPECIFIED = 0;
+    USER_ROLE_USER        = 1;
+    USER_ROLE_ADMIN       = 2;
+    USER_ROLE_NODE        = 3;             // Internal role for node agents
+}
+
+message UserInfo {
+    string user_id = 1;
+    string username = 2;
+    UserRole role = 3;
+    ResourceSpec quota = 4;                // Max resource allocation for this user
+    double fair_share_score = 5;           // Current fair-share score (0.0-1.0)
+    int64 created_at = 6;
+}
+
+message Credentials {
+    string username = 1;
+    string password = 2;
+}
+
+message AuthToken {
+    string access_token = 1;
+    string token_type = 2;                 // "Bearer"
+    int64 expires_at = 3;
+    UserInfo user = 4;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// METRICS DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+message MetricsSnapshot {
+    string node_id = 1;
+    double cpu_usage_percent = 2;
+    double ram_usage_percent = 3;
+    uint64 ram_used_mb = 4;
+    uint64 ram_total_mb = 5;
+    double gpu_usage_percent = 6;
+    double disk_usage_percent = 7;
+    uint64 disk_used_mb = 8;
+    uint64 disk_total_mb = 9;
+    double load_avg_1m = 10;
+    double load_avg_5m = 11;
+    double load_avg_15m = 12;
+    uint32 process_count = 13;
+    int64 timestamp = 14;
+    double network_rx_bytes_sec = 15;
+    double network_tx_bytes_sec = 16;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CLUSTER-LEVEL DEFINITIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+message ClusterInfo {
+    uint32 total_nodes = 1;
+    uint32 online_nodes = 2;
+    uint32 offline_nodes = 3;
+    ResourceSpec total_resources = 4;
+    ResourceSpec available_resources = 5;
+    ResourceSpec used_resources = 6;
+    uint32 total_jobs = 7;
+    uint32 running_jobs = 8;
+    uint32 queued_jobs = 9;
+    uint32 completed_jobs = 10;
+    uint32 failed_jobs = 11;
+    int64 uptime_seconds = 12;
+    string master_version = 13;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMMON RESPONSES
+// ═══════════════════════════════════════════════════════════════════════════
+
+message StatusResponse {
+    bool success = 1;
+    string message = 2;
+    string error_code = 3;
+}
+
+message Empty {}

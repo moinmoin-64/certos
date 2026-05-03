@@ -1,0 +1,14 @@
+agent:
+  master_address: "127.0.0.1"
+  master_port: 50051
+  heartbeat_interval_sec: 5
+  metrics_interval_sec: 5
+  log_dir: "logs"
+  log_level: "debug"
+  work_dir: "/tmp/certosc-jobs"
+  auth_key: "certosc-node-key"
+  max_concurrent_jobs: 0
+  enable_tls: false
+  cpu_cores: 0
+  ram_mb: 0
+  gpu_count: 0
