@@ -1,6 +1,12 @@
 # CertOS 🚀
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 
-**CertOS** is a modular, high-performance, LAN-based Cloud Operating System designed for High-Performance Computing (HPC) clusters. Built in modern C++17, it utilizes a gRPC-based micro-architecture to distribute workloads across multiple machines securely and efficiently.
+CertOS is a specialized, bootable Linux distribution designed for HPC (High Performance Computing) and private cloud environments. It transforms standard hardware into a managed cluster node with job isolation and automated updates.
+
+## 💿 Quick Start
+1. **Download**: Get the latest ISO from the [Releases](https://github.com/moinmoin-64/certos/releases) page.
+2. **Install**: Boot from the ISO and follow the TUI Wizard to configure your node as a Master or Agent.
+3. **Connect**: Access the Web Gateway at `http://<master-ip>:8080`.
 
 ## Features
 
